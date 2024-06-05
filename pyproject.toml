@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "exp-ev-wp-detectie"
+version = "0.1.0"
+description = ""
+authors = ["Jim Scheefhals <jim.scheefhals@dep.nl>"]
+readme = "README.md"
+packages = [{include = "exp_ev_wp_detectie"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+numpy = "^1.26.4"
+
+
+[tool.poetry.group.dev.dependencies]
+jupyter = "^1.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
