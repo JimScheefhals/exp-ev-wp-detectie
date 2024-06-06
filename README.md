@@ -12,7 +12,7 @@ poetry install
 ## Sampling charging profiles
 Charging profiles are generated using the E-laad LV Profile Generator: 
 https://platform.elaad.io/analyse/low-voltage-charging-profiles/. 
-These profiles may be sampled using:
+Once the resulting csv-files are in "data_dir/elaad/laadprofielen", these profiles may be sampled using:
 ```
 from ev_detection.src.charging_profile import ChargingProfiles()
 
