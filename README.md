@@ -8,3 +8,11 @@ and set up environment variables in a local `.env` file (see `.env.example` for 
 ```shell
 poetry install
 ```
+
+## Sampling charging profiles
+Charging profiles are generated using the E-laad LV Profile Generator: 
+https://platform.elaad.io/analyse/low-voltage-charging-profiles/. 
+These profiles may be sampled using 
+```
+ChargingProfiles().sample_profiles(N_profiles)
+```
