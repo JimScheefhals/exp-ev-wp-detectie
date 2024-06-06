@@ -11,7 +11,7 @@ class ChargingProfiles:
         self.all_profiles = _loader.load_elaad_charging_profiles()
         self.unique_run_ids = self.all_profiles["run_id"].unique().tolist()
 
-    def get_dates(self):
+    def get_datetimes(self):
         return self.all_profiles[self.all_profiles["run_id"] == self.unique_run_ids[0]]["date_time"]
 
     def sample_profiles(self, N_profiles: int = 1) -> list[pd.Series]:
