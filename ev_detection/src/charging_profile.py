@@ -66,6 +66,20 @@ class ChargingProfiles:
             ]
         ).reset_index(drop=True)
 
+    def start_charging_sessions(self) -> pd.Series:
+        """
+        Determine the start time of every charging session.
+        """
+        datetime = self.get_datetimes()
+        return pd.Series(
+            [
+                datetime.iloc[idx].hour
+                for id in self.unique_run_ids
+                for idx in ChargingProfile(self._get_profile_by_id(id)).get_start_charging_sessions()
+            ]
+        )
+
+
 class ChargingProfile:
     def __init__(self, power: pd.Series):
         self.power = power
@@ -112,6 +126,23 @@ class ChargingProfile:
         # Find and return the charge at the end of every charging session
         idx_end_session = np.argwhere(loaded_charge[1:] - loaded_charge[:-1] < 0)[:, 0]
         return pd.Series(loaded_charge[idx_end_session]) # [kWh]
+
+    def get_start_charging_sessions(self):
+        """
+        Determine the start of every charging session in indices.
+        """
+        # Determine wheter the car is charging (1) or not (0)
+        charging = np.zeros(len(self.power))
+        charging[self.power > 0] = 1
+
+        # Find and return the start of every charging session
+        idx_start_session = np.argwhere(
+            np.logical_and(
+                charging[1:] == 1,
+                charging[:-1] == 0
+            )
+        )[:, 0]
+        return pd.Series(idx_start_session) # [timesteps]
 
 
 def cumulative_sum_with_reset(x: np.ndarray) -> np.ndarray:
