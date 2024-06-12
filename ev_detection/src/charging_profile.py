@@ -17,16 +17,14 @@ class ChargingProfiles:
     def __init__(self):
         self.all_profiles = _loader.load_elaad_charging_profiles()
         self.unique_run_ids = self.all_profiles["run_id"].unique().tolist()
+        self.all_profiles = self._expand_datetime(self.all_profiles)
 
     def get_datetimes(self):
-        return pd.to_datetime(
-            self.all_profiles[self.all_profiles["run_id"] == self.unique_run_ids[0]]["date_time"],
-            utc=True
-        )
+        return self.all_profiles[self.all_profiles["run_id"] == self.unique_run_ids[0]]["datetime"]
 
-    def sample_profiles(self, N_profiles: int = 1) -> list[pd.Series]:
+    def sample_yearly_profiles(self, N_profiles: int = 1) -> list[pd.Series]:
         """
-        Randomly sample 'N_profiles' charging profiles
+        Randomly sample 'N_profiles' yearly charging profiles
         :param N_profiles: the number of profiles to sample
         :return: list of charging profiles
         """
@@ -37,8 +35,26 @@ class ChargingProfiles:
             for run_id in selected_run_ids
         ]
 
-    def _get_profile_by_id(self, run_id: int) -> pd.Series:
-        return self.all_profiles[self.all_profiles["run_id"] == run_id]["power"]
+    def get_datetimes_week(self):
+        df_datetime = self.all_profiles[self.all_profiles["run_id"] == self.unique_run_ids[0]]
+        return df_datetime[df_datetime["week"] == 1]["datetime"]
+
+    def sample_weekly_profiles(self, N_profiles: int = 1):
+        """
+        Randomly sample 'N_profiles' weekly charging profiles
+        :param N_profiles: the number of profiles to sample
+        :return: list of charging profiles
+        """
+        run_id_week_combinations = [
+            [id, week]
+            for id in self.unique_run_ids
+            for week in np.unique(self.all_profiles["week"])
+        ]
+        selected_combinations = sample(run_id_week_combinations, N_profiles)
+        return [
+            self._get_profile_by_id_week(run_id, week)
+            for run_id, week in selected_combinations
+        ]
 
     def duration_charging_sessions(self) -> pd.Series:
         """
@@ -79,6 +95,28 @@ class ChargingProfiles:
             ]
         )
 
+    def _get_profile_by_id(self, run_id: int) -> pd.Series:
+        return self.all_profiles[self.all_profiles["run_id"] == run_id]["power"]
+
+    def _get_profile_by_id_week(self, run_id: int, week: int) -> pd.Series:
+        yearly_profile = self.all_profiles[self.all_profiles["run_id"] == run_id]
+        return yearly_profile[yearly_profile["week"] == week]["power"]
+
+    def _expand_datetime(self, df: pd.DataFrame):
+        df_datetime = pd.DataFrame({
+            "date_time": self.all_profiles[self.all_profiles["run_id"] == self.unique_run_ids[0]]["date_time"]
+        })
+        df_datetime["datetime"] = pd.to_datetime(df_datetime["date_time"], utc=True)
+        df_datetime["week"] = df_datetime["datetime"].dt.isocalendar().week
+        df_datetime["weekday"] = df_datetime["datetime"].dt.weekday
+        df_datetime["time"] = df_datetime["datetime"].dt.time
+        df_datetime["hour"] = df_datetime["datetime"].dt.hour
+        return df.merge(
+            df_datetime,
+            on="date_time",
+            how="inner"
+        )
+
 
 class ChargingProfile:
     def __init__(self, power: pd.Series):
@@ -102,7 +140,7 @@ class ChargingProfile:
         Determine the duration of all charging sessions in the profile.
         :return: series of durations of charging sessions in hours
         """
-        # Determine wheter the car is charging (1) or not (0)
+        # Determine whether the car is charging (1) or not (0)
         charging = np.zeros(len(self.power))
         charging[self.power > 0] = 1
 

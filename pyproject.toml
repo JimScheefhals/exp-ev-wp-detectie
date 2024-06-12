@@ -15,6 +15,7 @@ pandas = "^2.2.2"
 python-dotenv = "^1.0.1"
 matplotlib = "^3.9.0"
 plotly = "^5.22.0"
+polars = "^0.20.31"
 
 
 [tool.poetry.group.dev.dependencies]
