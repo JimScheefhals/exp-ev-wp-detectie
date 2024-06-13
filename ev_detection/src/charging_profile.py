@@ -1,3 +1,5 @@
+import itertools
+
 import pandas as pd
 import numpy as np
 
@@ -11,46 +13,77 @@ LOAD_TO_SOC_FACTOR = TIMESTEP  # kW to kWh per timestep
 MINIMUM_SOC_AT_START_SESSION = (
     0.1  # Assumed minimum state of charge, as a fraction of the battery capacity
 )
+CAPACITY_DISTRIBUTION = {
+    4: 0.1,
+    8: 0.1,
+    11: 0.8
+} # Assumed distribution of charger capacities
 
 class ChargingProfiles:
 
     def __init__(self):
         self.all_profiles = _loader.load_elaad_charging_profiles()
-        self.unique_run_ids = self.all_profiles["run_id"].unique().tolist()
+        self.id_capacity_mapping =self.all_profiles[
+            ["run_id", "capacity"]
+        ].drop_duplicates().set_index("run_id", drop=True).to_dict()["capacity"]
+        self.unique_run_ids = list(self.id_capacity_mapping.keys())
         self.all_profiles = self._expand_datetime(self.all_profiles)
 
-    def get_datetimes(self):
+    def get_datetimes(self) -> pd.Series:
         return self.all_profiles[self.all_profiles["run_id"] == self.unique_run_ids[0]]["datetime"]
 
-    def sample_yearly_profiles(self, N_profiles: int = 1) -> list[pd.Series]:
+    def sample_yearly_profiles(
+            self,
+            N_profiles: int = 1,
+            capacity_distribution: dict[int, float] = CAPACITY_DISTRIBUTION
+    ) -> list[pd.Series]:
         """
-        Randomly sample 'N_profiles' yearly charging profiles
+        Randomly sample 'N_profiles' yearly charging profiles, where charger capacities are selected according to the
+        given distribution.
         :param N_profiles: the number of profiles to sample
+        :param capacity_distribution: the distribution of charger capacities
         :return: list of charging profiles
         """
-
-        selected_run_ids = sample(self.unique_run_ids, N_profiles)
+        id_prob_mapping = {k: capacity_distribution[v] for k, v in
+                           self.id_capacity_mapping.items()}
+        id_prob_mapping = {k: v / sum(id_prob_mapping.values()) for k, v in id_prob_mapping.items()}
+        selected_run_ids = np.random.choice(
+            list(id_prob_mapping.keys()),
+            p=list(id_prob_mapping.values()),
+            size=N_profiles
+        )
         return [
             self._get_profile_by_id(run_id)
             for run_id in selected_run_ids
         ]
 
-    def get_datetimes_week(self):
+    def get_datetimes_week(self) -> pd.Series:
         df_datetime = self.all_profiles[self.all_profiles["run_id"] == self.unique_run_ids[0]]
         return df_datetime[df_datetime["week"] == 1]["datetime"]
 
-    def sample_weekly_profiles(self, N_profiles: int = 1):
+    def sample_weekly_profiles(
+        self,
+        N_profiles: int = 1,
+        capacity_distribution: dict[int, float] = CAPACITY_DISTRIBUTION
+    ) -> list[pd.Series]:
         """
-        Randomly sample 'N_profiles' weekly charging profiles
+        Randomly sample 'N_profiles' weekly charging profiles, where charger capacities are selected according to the
+        given distribution.
         :param N_profiles: the number of profiles to sample
         :return: list of charging profiles
         """
-        run_id_week_combinations = [
-            [id, week]
-            for id in self.unique_run_ids
-            for week in np.unique(self.all_profiles["week"])
+        run_id_week_combinations = list(itertools.product(self.unique_run_ids, np.unique(self.all_profiles["week"])))
+        probabilities = np.array([
+            capacity_distribution[self.id_capacity_mapping[t[0]]]
+            for t in run_id_week_combinations
+        ])
+        selected_combinations = np.array(run_id_week_combinations)[
+            np.random.choice(
+                np.arange(len(run_id_week_combinations)),
+                p=probabilities / sum(probabilities),
+                size=N_profiles
+            )
         ]
-        selected_combinations = sample(run_id_week_combinations, N_profiles)
         return [
             self._get_profile_by_id_week(run_id, week)
             for run_id, week in selected_combinations
@@ -94,6 +127,12 @@ class ChargingProfiles:
                 for idx in ChargingProfile(self._get_profile_by_id(id)).get_start_charging_sessions()
             ]
         )
+
+    def get_charger_capacities(self):
+        return [
+            ChargingProfile(self._get_profile_by_id(id)).get_charging_capacity()
+            for id in self.unique_run_ids
+        ]
 
     def _get_profile_by_id(self, run_id: int) -> pd.Series:
         return self.all_profiles[self.all_profiles["run_id"] == run_id]["power"]
@@ -192,3 +231,6 @@ def cumulative_sum_with_reset(x: np.ndarray) -> np.ndarray:
     diff = np.diff(np.concatenate(([0.0], cumulative_sum[not_loading])))
     x[not_loading] = -diff
     return np.cumsum(x)
+
+charging_profiles = ChargingProfiles()
+samples = charging_profiles.sample_weekly_profiles(10)
