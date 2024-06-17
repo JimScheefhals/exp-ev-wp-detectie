@@ -14,7 +14,7 @@ Charging profiles are generated using the E-laad LV Profile Generator:
 https://platform.elaad.io/analyse/low-voltage-charging-profiles/. 
 Once the resulting csv-files are in "data_dir/elaad/laadprofielen", these profiles may be sampled using:
 ```
-from ev_detection.src.charging_profile import ChargingProfiles()
+from ev_detection.src.input.charging_profile import ChargingProfiles()
 
 ChargingProfiles().sample_profiles(N_profiles)
 ```
@@ -37,7 +37,7 @@ with a charging profile as described above.
 Negatives are just copies of the baseload profiles.
 In this case, weekly profiles are the default.
 ```
-from ev_detection.src.synthetic_profiles import SyntheticProfiles
+from ev_detection.src.input.synthetic_profiles import SyntheticProfiles
 
 SyntheticProfiles().render_positives()
 SyntheticProfiles().render_negatives()
