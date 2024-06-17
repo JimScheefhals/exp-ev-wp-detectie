@@ -37,6 +37,8 @@ with a charging profile as described above.
 Negatives are just copies of the baseload profiles.
 In this case, weekly profiles are the default.
 ```
+from ev_detection.src.synthetic_profiles import SyntheticProfiles
+
 SyntheticProfiles().render_positives()
 SyntheticProfiles().render_negatives()
 SyntheticProfiles().get_datetimes()
