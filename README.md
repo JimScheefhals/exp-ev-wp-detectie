@@ -22,3 +22,22 @@ The corresponding datetimes are extracted via
 ```
 ChargingProfiles().get_datetimes()
 ```
+
+The same may be done for weekly data:
+```
+ChargingProfile().sample_weekly_profiles()
+ChargingProfile().get_datetimes_week()
+```
+
+
+## Sampling synthetic smart meter data
+Synthetic smart meter data may be used to train a supervised learning model. 
+Positives (i.e. has a home charger for EV) are constructed by combining a 'clean' baseload, 
+with a charging profile as described above. 
+Negatives are just copies of the baseload profiles.
+In this case, weekly profiles are the default.
+```
+SyntheticProfiles().render_positives()
+SyntheticProfiles().render_negatives()
+SyntheticProfiles().get_datetimes()
+```
