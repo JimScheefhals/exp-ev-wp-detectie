@@ -3,8 +3,10 @@ import itertools
 import pandas as pd
 import numpy as np
 
-from ev_detection.src.data_loader import DataLoader
 from random import sample
+
+from ev_detection.src.input.data_loader import DataLoader
+from ev_detection.src.types.profiles import WeekProfile, YearProfile
 
 _loader = DataLoader()
 
@@ -37,7 +39,7 @@ class ChargingProfiles:
             self,
             N_profiles: int = 1,
             capacity_distribution: dict[int, float] = CAPACITY_DISTRIBUTION
-    ) -> list[pd.Series]:
+    ) -> list[YearProfile]:
         """
         Randomly sample 'N_profiles' yearly charging profiles, where charger capacities are selected according to the
         given distribution.
@@ -66,7 +68,7 @@ class ChargingProfiles:
         self,
         N_profiles: int = 1,
         capacity_distribution: dict[int, float] = CAPACITY_DISTRIBUTION
-    ) -> list[pd.Series]:
+    ) -> list[WeekProfile]:
         """
         Randomly sample 'N_profiles' weekly charging profiles, where charger capacities are selected according to the
         given distribution. Use only combinations of run_id and week_nr for which the profile contains at least one

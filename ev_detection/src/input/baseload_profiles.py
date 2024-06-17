@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
-from ev_detection.src.data_loader import DataLoader
+
+from ev_detection.src.input.data_loader import DataLoader
+from ev_detection.src.types.profiles import WeekProfile
 
 loader = DataLoader()
 
@@ -10,7 +12,7 @@ SJV_TO_AVG_KW = 4 / 52 # factor for converting sjv to an average power in kW for
 
 class BaseloadProfiles:
 
-    def sample_weekly_profiles(self, n_profiles: int) -> list[pd.Series]:
+    def sample_weekly_profiles(self, n_profiles: int) -> list[WeekProfile]:
         """
         Sample dummy baseload profiles. This is to be replaced with PULSE smart meter data.
         The baseloads are assumed to represent the consumed power of a E1 or E2 customer, which does not charge an EV

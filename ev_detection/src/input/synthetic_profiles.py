@@ -1,14 +1,15 @@
 import pandas as pd
 
-from ev_detection.src.baseload_profiles import BaseloadProfiles
-from ev_detection.src.charging_profile import ChargingProfiles
+from ev_detection.src.input.baseload_profiles import BaseloadProfiles
+from ev_detection.src.input.charging_profile import ChargingProfiles
+from ev_detection.src.types.profiles import WeekProfile
 
 charging_profiles = ChargingProfiles()
 baseload_profiles = BaseloadProfiles()
 
 class SyntheticProfiles:
 
-    def render_positives(self, n_profiles: int) -> list[pd.Series]:
+    def render_positives(self, n_profiles: int) -> list[WeekProfile]:
         """
         Generate synthetic profiles by combining samples from PULSE baseload profiles with E-laad charging profiles.
         The profiles cover one week and the interval is 15 minutes and contain a charging profile.
