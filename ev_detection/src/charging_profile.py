@@ -14,9 +14,9 @@ MINIMUM_SOC_AT_START_SESSION = (
     0.1  # Assumed minimum state of charge, as a fraction of the battery capacity
 )
 CAPACITY_DISTRIBUTION = {
-    4: 0.1,
-    8: 0.1,
-    11: 0.8
+    4: 0.4,
+    8: 0.3,
+    11: 0.3
 } # Assumed distribution of charger capacities
 
 class ChargingProfiles:
@@ -28,6 +28,7 @@ class ChargingProfiles:
         ].drop_duplicates().set_index("run_id", drop=True).to_dict()["capacity"]
         self.unique_run_ids = list(self.id_capacity_mapping.keys())
         self.all_profiles = self._expand_datetime(self.all_profiles)
+        self.run_id_week_combinations = self.find_possible_run_id_week_combinations()
 
     def get_datetimes(self) -> pd.Series:
         return self.all_profiles[self.all_profiles["run_id"] == self.unique_run_ids[0]]["datetime"]
@@ -59,7 +60,7 @@ class ChargingProfiles:
 
     def get_datetimes_week(self) -> pd.Series:
         df_datetime = self.all_profiles[self.all_profiles["run_id"] == self.unique_run_ids[0]]
-        return df_datetime[df_datetime["week"] == 1]["datetime"]
+        return df_datetime[df_datetime["week"] == 2]["datetime"]
 
     def sample_weekly_profiles(
         self,
@@ -68,25 +69,40 @@ class ChargingProfiles:
     ) -> list[pd.Series]:
         """
         Randomly sample 'N_profiles' weekly charging profiles, where charger capacities are selected according to the
-        given distribution.
+        given distribution. Use only combinations of run_id and week_nr for which the profile contains at least one
+        (or part of a) charging session.
         :param N_profiles: the number of profiles to sample
         :return: list of charging profiles
         """
-        run_id_week_combinations = list(itertools.product(self.unique_run_ids, np.unique(self.all_profiles["week"])))
         probabilities = np.array([
             capacity_distribution[self.id_capacity_mapping[t[0]]]
-            for t in run_id_week_combinations
+            for t in self.run_id_week_combinations
         ])
-        selected_combinations = np.array(run_id_week_combinations)[
+
+        # Sample combinations
+        selected_combinations = np.array(self.run_id_week_combinations)[
             np.random.choice(
-                np.arange(len(run_id_week_combinations)),
+                np.arange(len(self.run_id_week_combinations)),
                 p=probabilities / sum(probabilities),
                 size=N_profiles
             )
         ]
         return [
-            self._get_profile_by_id_week(run_id, week)
+            self._get_profile_by_id_week(run_id, week).reset_index(drop=True)
             for run_id, week in selected_combinations
+        ]
+
+    def find_possible_run_id_week_combinations(self) -> list[tuple[int, int]]:
+        """
+        Find all combinations of run_id and week number for which the maximum of the corresponding profile is larger
+        than 1.
+        """
+        return [
+            (run_id, week_nr)
+            for run_id, week_nr in zip(
+                self.unique_run_ids, np.unique(self.all_profiles["week"])
+            )
+            if self._get_profile_by_id_week(run_id, week_nr).max() > 1
         ]
 
     def duration_charging_sessions(self) -> pd.Series:
@@ -115,18 +131,17 @@ class ChargingProfiles:
             ]
         ).reset_index(drop=True)
 
-    def start_charging_sessions(self) -> pd.Series:
+    def start_charging_sessions(self) -> tuple[pd.Series, pd.Series]:
         """
-        Determine the start time of every charging session.
+        Determine the start time, in hours and weekdays, of every charging session.
         """
         datetime = self.get_datetimes()
-        return pd.Series(
-            [
-                datetime.iloc[idx].hour
-                for id in self.unique_run_ids
-                for idx in ChargingProfile(self._get_profile_by_id(id)).get_start_charging_sessions()
-            ]
-        )
+        weekday, hour = zip(*[
+            (datetime.iloc[idx].weekday(), datetime.iloc[idx].hour)
+            for id in self.unique_run_ids
+            for idx in ChargingProfile(self._get_profile_by_id(id)).get_start_charging_sessions()
+        ])
+        return pd.Series(weekday), pd.Series(hour)
 
     def get_charger_capacities(self):
         return [
@@ -145,7 +160,7 @@ class ChargingProfiles:
         df_datetime = pd.DataFrame({
             "date_time": self.all_profiles[self.all_profiles["run_id"] == self.unique_run_ids[0]]["date_time"]
         })
-        df_datetime["datetime"] = pd.to_datetime(df_datetime["date_time"], utc=True)
+        df_datetime["datetime"] = pd.to_datetime(df_datetime["date_time"], utc=True).dt.tz_convert("Europe/Amsterdam")
         df_datetime["week"] = df_datetime["datetime"].dt.isocalendar().week
         df_datetime["weekday"] = df_datetime["datetime"].dt.weekday
         df_datetime["time"] = df_datetime["datetime"].dt.time
