@@ -1,6 +1,8 @@
 import pandas as pd
+import scipy
 
 from ev_detection.src.features.feature_input import FeatureInput
+from ev_detection.src.input.synthetic_profiles import SyntheticProfiles
 from ev_detection.src.types.feature_names import FeatureName
 from ev_detection.src.types.feature_types import feature_types
 
@@ -23,5 +25,9 @@ class FeatureBuilder:
         res: dict[FeatureName] = {}
         for feature_name in self._features:
             feature = feature_types[feature_name]
-            res[feature_name.value] = feature().get()
+            res[feature_name.value] = feature(self._feature_input).get()
         return res
+
+
+samples = SyntheticProfiles().render_samples(10)
+FeatureBuilder(samples).build()

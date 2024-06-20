@@ -16,6 +16,8 @@ python-dotenv = "^1.0.1"
 matplotlib = "^3.9.0"
 plotly = "^5.22.0"
 polars = "^0.20.31"
+scipy = "^1.13.1"
+pytest = "^8.2.2"
 
 
 [tool.poetry.group.dev.dependencies]

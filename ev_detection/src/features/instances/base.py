@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 
 import pandas as pd
 
-from ev_detection.src.features.feature_builder import FeatureBuilder
 from ev_detection.src.features.feature_input import FeatureInput
 from ev_detection.src.types.feature_names import FeatureName
 
