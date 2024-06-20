@@ -13,5 +13,5 @@ class MaxFeature(ModelFeature):
     def get(self) -> pd.Series:
         return pd.Series([
             profile.max()
-            for profile in self.all_profiles
+            for profile in self.input.all_profiles
         ])
