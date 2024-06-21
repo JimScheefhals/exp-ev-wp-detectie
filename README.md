@@ -16,7 +16,7 @@ Once the resulting csv-files are in "data_dir/elaad/laadprofielen", these profil
 ```
 from ev_detection.src.input.charging_profile import ChargingProfiles()
 
-ChargingProfiles().sample_profiles(N_profiles)
+samples = ChargingProfiles().sample_profiles(N_profiles)
 ```
 The corresponding datetimes are extracted via 
 ```
@@ -25,7 +25,7 @@ ChargingProfiles().get_datetimes()
 
 The same may be done for weekly data:
 ```
-ChargingProfile().sample_weekly_profiles()
+samples = ChargingProfile().sample_weekly_profiles()
 ChargingProfile().get_datetimes_week()
 ```
 
@@ -39,7 +39,26 @@ In this case, weekly profiles are the default.
 ```
 from ev_detection.src.input.synthetic_profiles import SyntheticProfiles
 
-SyntheticProfiles().render_positives()
-SyntheticProfiles().render_negatives()
+# sample positives
+samples = SyntheticProfiles().render_positives(n_profiles)
+
+# sample negatives
+samples = SyntheticProfiles().render_negatives(n_profiles)
+
+# sample a mixture of positives and negatives
+samples, meta_data = SyntheticProfiles().render_samples(n_profiles, ratio_positives)
+
+# get datetimes
 SyntheticProfiles().get_datetimes()
+```
+
+## Building features from the data
+For feature building we use the `FeatureBuilder` interface which calls
+a number of specified features. Using the `build()` method, the features are
+constructed and stored in a pandas DataFrame which can be exported using `get_features()`.
+```
+from ev_detection.src.features.feature_builder import FeatureBuilder
+_builder = FeatureBuilder(samples, meta_data)
+_builder.build()
+features = _builder.get_features()
 ```
