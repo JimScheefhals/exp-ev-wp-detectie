@@ -17,6 +17,7 @@ class FeatureInput:
     """
     all_profiles: dict[int, pd.Series]
     datetime: pd.Series
+    meta_data: pd.DataFrame
 
     @cached_property
     def peak_properties(self) -> dict[int, [dict[str, np.ndarray]]]:

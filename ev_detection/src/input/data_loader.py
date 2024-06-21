@@ -38,3 +38,26 @@ class DataLoader:
                 last_run_id_ = df["run_id"].max()
 
         return df
+
+    def load_pulse_baseload_profiles(self) -> pd.DataFrame:
+        """
+        Load PULSE baseload profiles.
+        Assumes the main_folder_path contains the file "pulse_ev_detection.parquet"
+        """
+        file_path = Path(self.data_dir, "pulse_ev_detection.parquet")
+        return pd.read_parquet(file_path)
+
+    def load_pulse_labels(self) -> pd.DataFrame:
+        """
+        Load PULSE labels.
+        Assumes the main_folder_path contains the file "pulse_labelling.xlsx"
+        """
+        file_path = Path(self.data_dir, "pulse_labelling.xlsx")
+        return pd.read_excel(file_path)
+
+if __name__ == "__main__":
+    loader = DataLoader()
+    elaad = loader.load_elaad_charging_profiles()
+    pulse = loader.load_pulse_baseload_profiles()
+    labels = loader.load_pulse_labels()
+    print(pulse)

@@ -1,7 +1,7 @@
 import pandas as pd
 
 from ev_detection.src.features.feature_input import FeatureInput
-from ev_detection.src.input.synthetic_profiles import SyntheticProfiles
+from ev_detection.src.input.load_profiles import LoadProfiles
 from ev_detection.src.types.feature_names import FeatureName
 from ev_detection.src.types.feature_types import feature_types
 
@@ -19,14 +19,14 @@ class FeatureBuilder:
     ):
         self._feature_input = FeatureInput(
             all_profiles=all_profiles,
-            datetime=datetime
+            datetime=datetime,
+            meta_data=meta_data
         )
         self._features = _features
-        self.meta_data = meta_data
 
     def build(self) -> dict[FeatureName: pd.Series]:
         """ Build features and write them to a DataFrame."""
-        self.res = self.meta_data.copy()
+        self.res = self._feature_input.meta_data.copy()
         for feature_name in self._features:
             feature = feature_types[feature_name]
             self.res[feature_name.value] = self.res["id"].map(
@@ -40,9 +40,9 @@ class FeatureBuilder:
         return self._feature_input
 
 if __name__ == "__main__":
-    syn_profiles = SyntheticProfiles()
+    syn_profiles = LoadProfiles()
     samples, meta_data = syn_profiles.render_samples(10)
-    datetime = SyntheticProfiles().get_datetimes()
+    datetime = syn_profiles.get_datetimes()
     builder = FeatureBuilder(samples, datetime, meta_data)
     builder.build()
     features = builder.get_features()
