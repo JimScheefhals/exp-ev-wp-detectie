@@ -39,10 +39,10 @@ class FeatureBuilder:
     def get_input(self) -> FeatureInput:
         return self._feature_input
 
-syn_profiles = SyntheticProfiles()
-samples, meta_data = syn_profiles.render_samples(10)
-datetime = SyntheticProfiles().get_datetimes()
-builder = FeatureBuilder(samples, datetime, meta_data)
-builder.build()
-features = builder.get_features()
-features
+if __name__ == "__main__":
+    syn_profiles = SyntheticProfiles()
+    samples, meta_data = syn_profiles.render_samples(10)
+    datetime = SyntheticProfiles().get_datetimes()
+    builder = FeatureBuilder(samples, datetime, meta_data)
+    builder.build()
+    features = builder.get_features()
