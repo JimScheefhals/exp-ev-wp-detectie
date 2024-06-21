@@ -19,7 +19,7 @@ class ModelFeature(ABC):
         pass
 
     @abstractmethod
-    def get(self) -> pd.Series:
+    def get(self) -> dict[int, float]:
         """
         Return feature values
         """

@@ -10,8 +10,8 @@ class MaxFeature(ModelFeature):
     def type(self) -> FeatureName:
         return FeatureName.MAX
 
-    def get(self) -> pd.Series:
-        return pd.Series([
-            profile.max()
-            for profile in self.input.all_profiles
-        ])
+    def get(self) -> dict[int, float]:
+        return {
+            id: profile.max()
+            for id, profile in self.input.all_profiles.items()
+        }

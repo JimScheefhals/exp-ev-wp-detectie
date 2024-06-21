@@ -10,18 +10,31 @@ baseload_profiles = BaseloadProfiles()
 
 class SyntheticProfiles:
 
-    def render_samples(self, n_profiles: int, ratio_positives: float = 0.5) -> list[WeekProfile]:
+    def render_samples(
+            self, n_profiles: int, ratio_positives: float = 0.5
+    ) -> tuple[dict[int, WeekProfile], pd.DataFrame]:
         """
+        Create a randomly ordered set of positive and negative samples.
         :param n_profiles: total number of profiles
         :param ratio_positives: ratio of positive profiles
-        :return: list of combined positive and negative synthetic profiles
+        :return: tuple containing:
+         - a dict of combined positive and negative synthetic profiles and their id's,
+         - a dataframe with the id's and their corresponding labels (positive=True, negative=False)
         """
+        # render the samples with their corresponding labels
         samples = (
             self.render_positives(int(n_profiles * ratio_positives)) +
             self.render_negatives(int(n_profiles * (1 - ratio_positives)))
         )
-        random.shuffle(samples)
-        return samples
+        labels = [True] * int(n_profiles * ratio_positives) + [False] * int(n_profiles * (1 - ratio_positives))
+
+        # Shuffle the samples and labels
+        idxs = list(range(n_profiles))
+        random.shuffle(idxs)
+        samples = {id: samples[idx] for id, idx in enumerate(idxs)}
+        labels = [labels[idx] for idx in idxs]
+        return samples, pd.DataFrame({"id": range(len(labels)), "label": labels})
+
 
     def render_positives(self, n_profiles: int) -> list[WeekProfile]:
         """
