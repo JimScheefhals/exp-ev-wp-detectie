@@ -39,6 +39,7 @@ class FeatureBuilder:
     def get_input(self) -> FeatureInput:
         return self._feature_input
 
+
 if __name__ == "__main__":
     syn_profiles = LoadProfiles()
     samples, meta_data = syn_profiles.render_samples(10)

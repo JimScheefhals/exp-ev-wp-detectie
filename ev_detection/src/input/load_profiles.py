@@ -1,5 +1,6 @@
 import pandas as pd
 import random
+import plotly.graph_objects as go
 
 from ev_detection.src.input.baseload_profiles import BaseloadProfiles
 from ev_detection.src.input.charging_profile import ChargingProfiles
@@ -85,9 +86,29 @@ class LoadProfiles:
         """
         return charging_profiles.get_datetimes_week().reset_index(drop=True)
 
+    def show_profile_components(self, profile_id: int, meta_data: pd.DataFrame):
+        """
+        Plot the individual components of the synthetic profiles.
+        Assuming these are build up using _baseload & _charging.
+        :param profile_id: the id of the profile
+        """
+        _info = meta_data[meta_data["id"] == profile_id]
+        datetime = charging_profiles.get_datetimes_week()
+        baseload_profile = baseload_profiles.get_profile_by_id_week(_info.PULSE_id, _info.PULSE_week)
+        charging_profile = charging_profiles.get_profile_by_id_week(int(_info.charging_id), int(_info.charging_week))
+
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=datetime, y=baseload_profile, mode='lines', name='baseload', showlegend=True))
+        fig.add_trace(go.Scatter(x=datetime, y=charging_profile, mode='lines', name='charging', showlegend=True))
+        fig.update_layout(
+            title="Synthetic profiles",
+            xaxis_title="Date",
+            yaxis_title="Power [kW]",
+        )
+        fig.show()
+
 if __name__ == "__main__":
     profiles = LoadProfiles()
     samples, meta_data = profiles.render_samples(10)
     datetime = profiles.get_datetimes()
-    print(samples)
-    print(meta_data)
+    profiles.show_profile_components(1, meta_data)

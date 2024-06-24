@@ -1,9 +1,6 @@
-import itertools
-
 import pandas as pd
 import numpy as np
 
-from random import sample
 
 from ev_detection.src.input.data_loader import DataLoader
 from ev_detection.src.types.profiles import WeekProfile, YearProfile
@@ -95,7 +92,7 @@ class ChargingProfiles:
             "charging_week": [week for run_id, week in selected_combinations]
         })
         return [
-            self._get_profile_by_id_week(run_id, week).reset_index(drop=True)
+            self.get_profile_by_id_week(run_id, week).reset_index(drop=True)
             for run_id, week in selected_combinations
         ], meta_data
 
@@ -104,17 +101,9 @@ class ChargingProfiles:
         Find all combinations of run_id and week number for which the maximum of the corresponding profile is larger
         than 1.
         """
-        run_id_grid, week_nr_grid = np.meshgrid(
-            self.unique_run_ids,
-            np.unique(self.all_profiles["week"])
-        )
-        return [
-            (run_id, week_nr)
-            for run_id, week_nr in zip(
-                run_id_grid.flatten(), week_nr_grid.flatten()
-            )
-            if self._get_profile_by_id_week(run_id, week_nr).max() > 1
-        ]
+        grouped_max = self.all_profiles[["run_id", "week", "power"]].groupby(by=["run_id", "week"]).max()
+        filtered_max = grouped_max[grouped_max["power"] > 1]
+        return list(filtered_max.index)
 
     def duration_charging_sessions(self) -> pd.Series:
         """
@@ -163,9 +152,9 @@ class ChargingProfiles:
     def _get_profile_by_id(self, run_id: int) -> pd.Series:
         return self.all_profiles[self.all_profiles["run_id"] == run_id]["power"]
 
-    def _get_profile_by_id_week(self, run_id: int, week: int) -> pd.Series:
-        yearly_profile = self.all_profiles[self.all_profiles["run_id"] == run_id]
-        return yearly_profile[yearly_profile["week"] == week]["power"]
+    def get_profile_by_id_week(self, profile_id: int, week_nr: int) -> pd.Series:
+        yearly_profile = self.all_profiles[self.all_profiles["run_id"] == profile_id]
+        return yearly_profile[yearly_profile["week"] == week_nr]["power"]
 
     def _expand_datetime(self, df: pd.DataFrame):
         df_datetime = pd.DataFrame({
