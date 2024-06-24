@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import random
 import plotly.graph_objects as go
 
@@ -94,12 +95,24 @@ class LoadProfiles:
         """
         _info = meta_data[meta_data["id"] == profile_id]
         datetime = charging_profiles.get_datetimes_week()
-        baseload_profile = baseload_profiles.get_profile_by_id_week(_info.PULSE_id, _info.PULSE_week)
-        charging_profile = charging_profiles.get_profile_by_id_week(int(_info.charging_id), int(_info.charging_week))
+
+
 
         fig = go.Figure()
+
+        baseload_profile = baseload_profiles.get_profile_by_id_week(
+            _info.PULSE_id,
+            _info.PULSE_week
+        )
         fig.add_trace(go.Scatter(x=datetime, y=baseload_profile, mode='lines', name='baseload', showlegend=True))
-        fig.add_trace(go.Scatter(x=datetime, y=charging_profile, mode='lines', name='charging', showlegend=True))
+
+        if ~np.isnan(_info.charging_id):
+            charging_profile = charging_profiles.get_profile_by_id_week(
+                int(_info.charging_id),
+                int(_info.charging_week)
+            )
+            fig.add_trace(go.Scatter(x=datetime, y=charging_profile, mode='lines', name='charging', showlegend=True))
+
         fig.update_layout(
             title="Synthetic profiles",
             xaxis_title="Date",
