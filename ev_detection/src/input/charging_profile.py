@@ -66,14 +66,14 @@ class ChargingProfiles:
 
     def sample_weekly_profiles(
         self,
-        N_profiles: int = 1,
+        n_profiles: int = 1,
         capacity_distribution: dict[int, float] = CAPACITY_DISTRIBUTION
-    ) -> list[WeekProfile]:
+    ) -> tuple[list[WeekProfile], pd.DataFrame]:
         """
         Randomly sample 'N_profiles' weekly charging profiles, where charger capacities are selected according to the
         given distribution. Use only combinations of run_id and week_nr for which the profile contains at least one
         (or part of a) charging session.
-        :param N_profiles: the number of profiles to sample
+        :param n_profiles: the number of profiles to sample
         :return: list of charging profiles
         """
         probabilities = np.array([
@@ -86,23 +86,32 @@ class ChargingProfiles:
             np.random.choice(
                 np.arange(len(self.run_id_week_combinations)),
                 p=probabilities / sum(probabilities),
-                size=N_profiles
+                size=n_profiles
             )
         ]
+        meta_data = pd.DataFrame({
+            "id": np.arange(n_profiles),
+            "charging_id": [run_id for run_id, week in selected_combinations],
+            "charging_week": [week for run_id, week in selected_combinations]
+        })
         return [
             self._get_profile_by_id_week(run_id, week).reset_index(drop=True)
             for run_id, week in selected_combinations
-        ]
+        ], meta_data
 
     def find_possible_run_id_week_combinations(self) -> list[tuple[int, int]]:
         """
         Find all combinations of run_id and week number for which the maximum of the corresponding profile is larger
         than 1.
         """
+        run_id_grid, week_nr_grid = np.meshgrid(
+            self.unique_run_ids,
+            np.unique(self.all_profiles["week"])
+        )
         return [
             (run_id, week_nr)
             for run_id, week_nr in zip(
-                self.unique_run_ids, np.unique(self.all_profiles["week"])
+                run_id_grid.flatten(), week_nr_grid.flatten()
             )
             if self._get_profile_by_id_week(run_id, week_nr).max() > 1
         ]
@@ -249,5 +258,6 @@ def cumulative_sum_with_reset(x: np.ndarray) -> np.ndarray:
     x[not_loading] = -diff
     return np.cumsum(x)
 
-charging_profiles = ChargingProfiles()
-samples = charging_profiles.sample_weekly_profiles(10)
+if __name__ == "__main__":
+    charging_profiles = ChargingProfiles()
+    samples = charging_profiles.sample_weekly_profiles(10)

@@ -59,8 +59,9 @@ class LoadProfiles:
         :param n_profiles: The number of profiles to generate
         :return: synthetic smart meter data
         """
-        charging = charging_profiles.sample_weekly_profiles(n_profiles)
-        baseload, meta_data = baseload_profiles.sample_weekly_profiles(n_profiles)
+        charging, meta_data_c = charging_profiles.sample_weekly_profiles(n_profiles)
+        baseload, meta_data_b = baseload_profiles.sample_weekly_profiles(n_profiles)
+        meta_data = meta_data_b.merge(meta_data_c, on="id")
         meta_data["label"] = True
         return {
             i: baseload[i].reset_index(drop=True) + charging[i].reset_index(drop=True)
