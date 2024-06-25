@@ -6,3 +6,4 @@ class FeatureName(Enum):
     MEAN_PEAK_PROMINENCE = "mean_peak_prominence"
     MAX_PEAK_WIDTH = "max_peak_width"
     MEAN_PEAK_WIDTH = "mean_peak_width"
+    MEAN_START_TIME = "mean_start_time"

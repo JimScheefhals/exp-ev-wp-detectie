@@ -6,6 +6,7 @@ import numpy as np
 
 from ev_detection.src.features.utils.changepoint_detection import changepoint_detection
 from ev_detection.src.features.utils.peak_detection import peak_detection_multiple_samples
+from ev_detection.src.features.utils.plateau_detection import PlateauDetection
 
 
 @dataclass
@@ -37,3 +38,7 @@ class FeatureInput:
         Calculate the plateaus, separated by the detected changepoints.
         Return the left and right boundaries of the locally maximum plateaus.
         """
+        return {
+            i: PlateauDetection(sample, self.changepoints[i]).get_bounds_high_plateaus()
+            for i, sample in self.all_profiles.items()
+        }

@@ -16,7 +16,7 @@ def plot_changepoints(_input: FeatureInput, max_profiles: int = 10):
     fig = go.Figure()
 
     for i in range(num_lines):
-        cps = _input.changepoints[i]
+        cps = _input.plateaus[i]
         sample = _input.all_profiles[i].reset_index(drop=True)
         color = colors[i]
 
@@ -25,9 +25,15 @@ def plot_changepoints(_input: FeatureInput, max_profiles: int = 10):
             mode='lines', line=dict(color=color, width=1.5), name=i, showlegend=True
         ))
         if len(cps) > 0:
+            left = [cp[0] for cp in cps]
+            right = [cp[1] for cp in cps]
             fig.add_trace(go.Scatter(
-                x=_input.datetime.iloc[cps], y=sample.iloc[cps],
-                mode='markers', marker=dict(size=8, color=color), showlegend=False
+                x=_input.datetime.iloc[left], y=sample.iloc[left],
+                mode='markers', marker=dict(size=8, color=color, symbol='arrow-bar-right'), showlegend=False
+            ))
+            fig.add_trace(go.Scatter(
+                x=_input.datetime.iloc[right], y=sample.iloc[right],
+                mode='markers', marker=dict(size=8, color=color, symbol='arrow-bar-left'), showlegend=False
             ))
 
     fig.update_layout(
