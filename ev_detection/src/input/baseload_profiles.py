@@ -57,12 +57,12 @@ class BaseloadProfiles:
 
     def _get_profiles_by_id_week(self, week_id_combinations: np.ndarray[tuple[int, str]]) -> dict[int, WeekProfile]:
         return {
-            i: self.get_profile_by_id_week(profile_id, week_nr)
+            i: self.get_profile_by_id_week(profile_id, int(week_nr))
             for i, (profile_id, week_nr) in enumerate(week_id_combinations)
         }
 
     def get_profile_by_id_week(self, profile_id: int, week_nr: int):
-        return self.all_profiles[self.week_nr == int(week_nr)][profile_id] * WATT_TO_KW
+        return self.all_profiles[self.week_nr == week_nr][profile_id] * WATT_TO_KW
 
     def _get_profiles_by_id(self, profile_ids: list[int]) -> dict[int, YearProfile]:
         return {profile_id: self.all_profiles[profile_id] * WATT_TO_KW for profile_id in profile_ids}

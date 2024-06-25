@@ -41,9 +41,9 @@ class FeatureBuilder:
 
 
 if __name__ == "__main__":
-    syn_profiles = LoadProfiles()
-    samples, meta_data = syn_profiles.render_samples(10)
-    datetime = syn_profiles.get_datetimes()
+    load_profiles = LoadProfiles()
+    samples, meta_data = load_profiles.render_samples(10)
+    datetime = load_profiles.get_datetimes()
     builder = FeatureBuilder(samples, datetime, meta_data)
     builder.build()
     features = builder.get_features()

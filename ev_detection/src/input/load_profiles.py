@@ -96,22 +96,23 @@ class LoadProfiles:
         _info = meta_data[meta_data["id"] == profile_id]
         datetime = charging_profiles.get_datetimes_week()
 
-
-
         fig = go.Figure()
 
         baseload_profile = baseload_profiles.get_profile_by_id_week(
-            _info.PULSE_id,
-            _info.PULSE_week
+            _info.PULSE_id.iloc[0],
+            int(_info.PULSE_week.iloc[0])
         )
         fig.add_trace(go.Scatter(x=datetime, y=baseload_profile, mode='lines', name='baseload', showlegend=True))
 
-        if ~np.isnan(_info.charging_id):
+        if ~np.isnan(_info.charging_id.iloc[0]):
             charging_profile = charging_profiles.get_profile_by_id_week(
-                int(_info.charging_id),
-                int(_info.charging_week)
+                int(_info.charging_id.iloc[0]),
+                int(_info.charging_week.iloc[0])
             )
             fig.add_trace(go.Scatter(x=datetime, y=charging_profile, mode='lines', name='charging', showlegend=True))
+
+            total = baseload_profile + charging_profile
+            fig.add_trace(go.Scatter(x=datetime, y=total, mode='lines', name='sum', showlegend=True))
 
         fig.update_layout(
             title="Synthetic profiles",
