@@ -60,4 +60,3 @@ if __name__ == "__main__":
     elaad = loader.load_elaad_charging_profiles()
     pulse = loader.load_pulse_baseload_profiles()
     labels = loader.load_pulse_labels()
-    print(pulse)
