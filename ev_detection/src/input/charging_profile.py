@@ -99,11 +99,17 @@ class ChargingProfiles:
     def find_possible_run_id_week_combinations(self) -> list[tuple[int, int]]:
         """
         Find all combinations of run_id and week number for which the maximum of the corresponding profile is larger
-        than 1.
+        than 1 and the profile contains the right amount of timesteps.
         """
-        grouped_max = self.all_profiles[["run_id", "week", "power"]].groupby(by=["run_id", "week"]).max()
+        grouped = self.all_profiles[["run_id", "week", "power"]].groupby(by=["run_id", "week"])
+
+        grouped_max = grouped.max()
         filtered_max = grouped_max[grouped_max["power"] > 1]
-        return list(filtered_max.index)
+
+        grouped_count = grouped.count()
+        filtered_count = grouped_count[grouped_count["power"] == 7 * 24 * 4]
+
+        return list(set(filtered_max.index).intersection(set(filtered_count.index)))
 
     def duration_charging_sessions(self) -> pd.Series:
         """

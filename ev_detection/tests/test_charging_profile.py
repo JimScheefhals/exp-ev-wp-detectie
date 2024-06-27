@@ -3,18 +3,19 @@ import numpy as np
 
 from ev_detection.src.input.charging_profile import ChargingProfile, ChargingProfiles
 
+N_PROFILES = 1000
 
 def test_charging_profiles():
     # GIVEN a ChargingProfiles instance
     _charging = ChargingProfiles()
 
     # WHEN generating weekly samples
-    result = _charging.sample_weekly_profiles(n_profiles=3)
+    result = _charging.sample_weekly_profiles(n_profiles=N_PROFILES)
 
     # THEN we expect the result to be a list with the correct number of samples and a dataframe with meta-data
-    assert len(result[0]) == 3
+    assert len(result[0]) == N_PROFILES
     assert isinstance(result[0], list)
-    assert len(result[1]) == 3
+    assert len(result[1]) == N_PROFILES
     assert isinstance(result[1], pd.DataFrame)
 
     # AND we expect the resulting profiles to have the correct length
