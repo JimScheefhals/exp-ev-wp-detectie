@@ -11,7 +11,9 @@ class ModelFeature(ABC):
     def __init__(self, input: FeatureInput):
         self.input = input
         self.n_profiles = len(self.input.all_profiles) # number of profiles
-        self.len_series = self.input.all_profiles[0].shape[0] # number of timesteps in the profiles
+        self.len_series = self.input.all_profiles[
+            list(self.input.all_profiles.keys())[0]
+        ].shape[0] # number of timesteps in the profiles
 
     @property
     @abstractmethod
