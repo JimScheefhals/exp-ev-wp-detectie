@@ -187,7 +187,7 @@ class ChargingProfile:
         - The battery is at least once fully charged in the profile
         :return:
         """
-        return self.get_loaded_charge().max() / (1 - MINIMUM_SOC_AT_START_SESSION)
+        return self.get_loaded_charge_sessions().max() / (1 - MINIMUM_SOC_AT_START_SESSION)
 
     def get_duration_charging_sessions(self) -> pd.Series:
         """
@@ -233,7 +233,7 @@ class ChargingProfile:
                 charging[1:] == 1,
                 charging[:-1] == 0
             )
-        )[:, 0]
+        )[:, 0] + 1
         return pd.Series(idx_start_session) # [timesteps]
 
 
