@@ -16,7 +16,8 @@ def plot_peaks(_input: FeatureInput, max_profiles: int = 10):
     fig = go.Figure()
 
     for i in range(num_lines):
-        peaks = _input.peak_properties[i]["idx"]
+        properties = _input.peak_properties[i]
+        peaks = properties["idx"]
         sample = _input.all_profiles[i].reset_index(drop=True)
         color = colors[i]
 

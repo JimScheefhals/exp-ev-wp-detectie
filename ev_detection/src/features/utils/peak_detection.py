@@ -7,7 +7,6 @@ MIN_PROMINENCE = 2 # [kW]
 MIN_WIDTH = 1      # [timesteps]
 MIN_HEIGHT = 3.7   # [kW]
 
-
 def peak_detection_single_sample(sample: pd.Series):
     """
     Peak detection algorithm

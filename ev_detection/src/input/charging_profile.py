@@ -99,11 +99,17 @@ class ChargingProfiles:
     def find_possible_run_id_week_combinations(self) -> list[tuple[int, int]]:
         """
         Find all combinations of run_id and week number for which the maximum of the corresponding profile is larger
-        than 1.
+        than 1 and the profile contains the right amount of timesteps.
         """
-        grouped_max = self.all_profiles[["run_id", "week", "power"]].groupby(by=["run_id", "week"]).max()
+        grouped = self.all_profiles[["run_id", "week", "power"]].groupby(by=["run_id", "week"])
+
+        grouped_max = grouped.max()
         filtered_max = grouped_max[grouped_max["power"] > 1]
-        return list(filtered_max.index)
+
+        grouped_count = grouped.count()
+        filtered_count = grouped_count[grouped_count["power"] == 7 * 24 * 4]
+
+        return list(set(filtered_max.index).intersection(set(filtered_count.index)))
 
     def duration_charging_sessions(self) -> pd.Series:
         """
@@ -187,7 +193,7 @@ class ChargingProfile:
         - The battery is at least once fully charged in the profile
         :return:
         """
-        return self.get_loaded_charge().max() / (1 - MINIMUM_SOC_AT_START_SESSION)
+        return self.get_loaded_charge_sessions().max() / (1 - MINIMUM_SOC_AT_START_SESSION)
 
     def get_duration_charging_sessions(self) -> pd.Series:
         """
@@ -233,7 +239,7 @@ class ChargingProfile:
                 charging[1:] == 1,
                 charging[:-1] == 0
             )
-        )[:, 0]
+        )[:, 0] + 1
         return pd.Series(idx_start_session) # [timesteps]
 
 

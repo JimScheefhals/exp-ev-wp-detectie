@@ -18,6 +18,7 @@ class BaseloadProfiles:
         ).to_frame(index=False, name='datetime')["datetime"]
         self.datetime_cet = self.datetime_utc.dt.tz_localize('UTC').dt.tz_convert('Europe/Amsterdam')
         self.week_nr = self.datetime_cet.dt.isocalendar().week
+        self.possible_week_id_combinations = self.find_id_week_combinations()
 
     def sample_weekly_profiles(
             self, n_profiles: int
@@ -29,10 +30,9 @@ class BaseloadProfiles:
         :param n_profiles:
         :return: weekly baseload profiles
         """
-        week_id_combinations = self.find_id_week_combinations()
-        selected_combinations = week_id_combinations[
+        selected_combinations = self.possible_week_id_combinations[
             np.random.choice(
-                np.arange(len(week_id_combinations)),
+                np.arange(len(self.possible_week_id_combinations)),
                 n_profiles
             )
         ]
@@ -75,8 +75,8 @@ class BaseloadProfiles:
         """
         Find all possible combinations of profile_id and week_nr for negatively labeled profiles and complete weeks.
         """
-        week_nrs = self.week_nr.unique()
-        week_nrs = week_nrs[week_nrs != 1 | week_nrs != 52] # remove incomplete week
+        week_nrs, count = np.unique(self.week_nr, return_counts=True)
+        week_nrs = week_nrs[np.argwhere(count == 7 * 24 * 4)[:, 0]] # filter out incomplete weeks
         return np.array([
             (profile_id, week_nr)
             for profile_id in self.profile_ids_negative
