@@ -64,9 +64,8 @@ class ClassifierModel:
         When only_wrong_predictions is True, only the wrong predictions are returned.
         """
         result = self.features_test.copy()
-        result["label"] = self.labels_test
         result["prediction"] = self.labels_predict
-        result = result.drop("label").merge(self._feature_builder.get_meta_data(), on="id", how="inner")
+        result = result.merge(self._feature_builder.get_meta_data(), on="id", how="inner")
         if only_wrong_predictions:
             return result[result["label"] != result["prediction"]]
         else:
@@ -91,4 +90,5 @@ if __name__ == "__main__":
     classifier_model = ClassifierModel(samples, datetime, meta_data)
     classifier_model.test_prediction(ClassifierName.LOGREGRESSION)
     metrics = classifier_model.get_metrics()
-    print(metrics)
+    predictions = classifier_model.get_predictions()
+    print(predictions)
