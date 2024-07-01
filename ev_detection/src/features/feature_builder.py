@@ -33,8 +33,14 @@ class FeatureBuilder:
                 feature(self._feature_input).get()
             )
 
-    def get_features(self) -> dict[FeatureName: pd.Series]:
-        return self.res
+    def get_features(self) -> pd.DataFrame:
+        return self.res[["id"] + [feature.value for feature in self._features]].set_index("id")
+
+    def get_labels(self) -> pd.Series:
+        return self._feature_input.meta_data["label"]
+
+    def get_meta_data(self) -> pd.DataFrame:
+        return self._feature_input.meta_data
 
     def get_input(self) -> FeatureInput:
         return self._feature_input
