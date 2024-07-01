@@ -91,4 +91,3 @@ if __name__ == "__main__":
     classifier_model.test_prediction(ClassifierName.LOGREGRESSION)
     metrics = classifier_model.get_metrics()
     predictions = classifier_model.get_predictions()
-    print(predictions)
