@@ -62,3 +62,15 @@ _builder = FeatureBuilder(samples, meta_data)
 _builder.build()
 features = _builder.get_features()
 ```
+
+## Training a model
+We use the constructed features to train a model. The model is trained using the `ModelTrainer` interface.
+This interface can be used together with a number of different Classifiers, which are specified in 
+the `classifier_types` parameter. We may perform a test of the model using the `test_prediction()` method and 
+get the metrics using the `get_metrics()` method.
+```
+from ev_detection.src.model.model_trainer import ModelTrainer
+classifier_model = ClassifierModel(samples, datetime, meta_data)
+classifier_model.test_prediction(ClassifierName.LOGREGRESSION)
+classifier_model.get_metrics()
+```
