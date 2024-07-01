@@ -27,9 +27,11 @@ class ClassifierModel:
             _features=_features
         )
         self._feature_builder.build()
-        self.train_test_split()
 
-    def train_test_split(self, random_state: int = 42):
+    def _split_data(self, random_state: int = 42):
+        """
+        Split the data into a training and test set.
+        """
 
         # Get the features and labels
         features = self._feature_builder.get_features()
@@ -40,17 +42,25 @@ class ClassifierModel:
             features, labels, test_size=0.2, random_state=random_state
         )
 
-    def train_and_predict(self, classifier: ClassifierName) -> pd.Series:
+    def _train_model(self, classifier: ClassifierName):
         """
-        Predict the labels of the test set using the given classifier.
+        Train the classifier on the training set.
         """
         model = classifier_types[classifier]
         model.fit(self.features_train, self.labels_train)
+        return model
+
+    def test_prediction(self, classifier: ClassifierName, random_state: int = 42):
+        """
+        Predict the labels of the test set using the given classifier.
+        """
+        self._split_data(random_state)
+        model = self._train_model(classifier)
         self.labels_predict = model.predict(self.features_test)
 
-    def get_predictions(self, only_wrong_predictions: bool = False) -> pd.Series:
+    def get_predictions(self, only_wrong_predictions: bool = False) -> pd.DataFrame:
         """
-        Get the results of the last prediction.
+        Get the results of the last prediction, including all features and meta-data.
         When only_wrong_predictions is True, only the wrong predictions are returned.
         """
         result = self.features_test.copy()
@@ -79,6 +89,6 @@ if __name__ == "__main__":
     samples, meta_data = load_profiles.render_samples(10)
     datetime = load_profiles.get_datetimes()
     classifier_model = ClassifierModel(samples, datetime, meta_data)
-    classifier_model.train_and_predict(ClassifierName.LOGREGRESSION)
+    classifier_model.test_prediction(ClassifierName.LOGREGRESSION)
     metrics = classifier_model.get_metrics()
     print(metrics)
