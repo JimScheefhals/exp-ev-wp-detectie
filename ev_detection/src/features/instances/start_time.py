@@ -17,7 +17,7 @@ class MeanStartTimeFeature(ModelFeature):
             id: np.nanmean([
                 self.input.datetime.iloc[plateau_idx[0]].hour + self.input.datetime.iloc[plateau_idx[0]].minute / 60
                 for plateau_idx in plateaus
-                ])
+                ]) if len(plateaus) > 0 else 0
             for id, plateaus in self.input.plateaus.items()
         }
 
@@ -37,6 +37,6 @@ class ConsistentStartTime(ModelFeature):
             id: np.std([
                 self.input.datetime.iloc[plateau_idx[0]].hour + self.input.datetime.iloc[plateau_idx[0]].minute / 60
                 for plateau_idx in plateaus
-                ])
+                ]) if len(plateaus) > 0 else 0
             for id, plateaus in self.input.plateaus.items()
         }
